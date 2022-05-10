@@ -91,17 +91,17 @@ func (ob *OrderBook) ProcessMarketOrder(side Side, quantity decimal.Decimal) (do
 //                partial done and placed to the orderbook without full quantity - partial will contain
 //                your order with quantity to left
 //      partialQuantityProcessed - if partial order is not nil this result contains processed quatity from partial order
-func (ob *OrderBook) ProcessLimitOrder(side Side, orderID string, quantity, price decimal.Decimal, , postOnly bool) (done []*Order, partial *Order, partialQuantityProcessed decimal.Decimal, err error) {
+func (ob *OrderBook) ProcessLimitOrder(side Side, orderID string, quantity, price decimal.Decimal, postOnly bool) (done []*Order, partial *Order, partialQuantityProcessed decimal.Decimal, postOnlyFlag bool, err error) {
 	if _, ok := ob.orders[orderID]; ok {
-		return nil, nil, decimal.Zero, ErrOrderExists
+		return nil, nil, decimal.Zero, false, ErrOrderExists
 	}
 
 	if quantity.Sign() <= 0 {
-		return nil, nil, decimal.Zero, ErrInvalidQuantity
+		return nil, nil, decimal.Zero, false, ErrInvalidQuantity
 	}
 
 	if price.Sign() <= 0 {
-		return nil, nil, decimal.Zero, ErrInvalidPrice
+		return nil, nil, decimal.Zero, false, ErrInvalidPrice
 	}
 
 	quantityToTrade := quantity
@@ -127,8 +127,7 @@ func (ob *OrderBook) ProcessLimitOrder(side Side, orderID string, quantity, pric
 	bestPrice := iter()
 
 	if comparator(bestPrice.Price()) && postOnly {
-		//cancel the order
-		done = append(done, ob.CancelOrder(orderID))
+		return nil, nil, decimal.Zero, true, nil
 
 	} else {
 

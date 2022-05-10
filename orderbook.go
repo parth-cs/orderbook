@@ -126,8 +126,12 @@ func (ob *OrderBook) ProcessLimitOrder(side Side, orderID string, quantity, pric
 
 	bestPrice := iter()
 
-	if comparator(bestPrice.Price()) && postOnly {
-		return nil, nil, decimal.Zero, true, nil
+	if bestPrice != nil && postOnly {
+		
+		if comparator(bestPrice.Price()) && postOnly {
+			return nil, nil, decimal.Zero, true, nil
+	
+		}
 
 	} else {
 
